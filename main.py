@@ -1,28 +1,36 @@
 # This is a sample Python script.
 import datetime
 import json
+import random
+import socket
+import struct
 import time
 from copy import deepcopy
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-from datetime import date
 
 import pandas as pd
 import requests
 from pygame import mixer
-import random
-import socket
-import struct
+
+
+# Press ⌃R to execute it or replace it with your code.
+# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 
 
 def check_availability(today):
     ip = socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
     browser_header = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36'}
-    URL = f"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=265&date={today}"
+    for id_ in [294, 265]:
+        url = f"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={id_}&date={today}"
+        # print(url)
+        get_availability(url, browser_header)
     # print(URL)
     # Use a breakpoint in the code line below to debug your script.
-    response = requests.get(URL, headers=browser_header)
+    time.sleep(15)
+
+
+def get_availability(url, browser_header):
+    response = requests.get(url, headers=browser_header)
     final_df = None
     if response.ok and ('centers' in json.loads(response.text)):
         resp_json = json.loads(response.text)['centers']
@@ -50,10 +58,10 @@ def check_availability(today):
         #                                      'bangaluru', 'asdf', 'free']
         # print(final_df[(final_df['min_age_limit'] == 18) & (final_df['available_capacity'] > 0)][
         #       ['date', 'min_age_limit', 'available_capacity']])
-        alarm_df = final_df[(final_df['min_age_limit'] == 18) & (final_df['available_capacity'] > 0)]
+        alarm_df = final_df[(final_df['min_age_limit'] == 18) & (final_df['available_capacity'] > 10)]
         if alarm_df.shape[0] > 0:
             print("available vaccine details")
-            print(alarm_df[["date", "available_capacity", "min_age_limit", "name"]])
+            print(alarm_df[["date", "available_capacity", "min_age_limit", "name","pincode"]])
             # Starting the mixer
             mixer.init()
 
@@ -64,13 +72,9 @@ def check_availability(today):
             mixer.music.set_volume(0.7)
 
             # Start playing the song
-            for i in range(20):
+            for i in range(5):
                 mixer.music.play()
                 time.sleep(5)
-        else:
-            print("No slots Available")
-    print("waiting__________")
-    time.sleep(15)
 
 
 # Press the green button in the gutter to run the script.
